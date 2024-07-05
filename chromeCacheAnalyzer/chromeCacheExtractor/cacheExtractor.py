@@ -1,10 +1,12 @@
 import traceback
-class cacheExtractor(cache_dir,out_dir,output_format):
+from pathlib import Path
+class cacheExtractor:
 
-    self.cache_files = []
-    self.cache_dir = cache_dir
-    self.out_dir = out_dir
-    self.output_format = output_format
+    def __init__(self, cache_dir, out_dir, output_format):
+        self.cache_files = []
+        self.cache_dir = cache_dir
+        self.out_dir = out_dir
+        self.output_format = output_format
 
     try:
         for root, dirs, files in os.walk(cache_dir):
