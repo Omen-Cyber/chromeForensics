@@ -1,32 +1,19 @@
+from io import BytesIO
+import struct
 class BinaryReader:
-    def __init__(self, stream: typing.BinaryIO):
-        self._stream = stream
-        self._closed = False
+    def __init__(self, stream):
+        self.b_stream = BytesIO(stream)
 
-    @classmethod
-    def from_bytes(cls, buffer: bytes):
-        return cls(io.BytesIO(buffer))
+    def tell(self):
+        return self.b_stream.tell()
 
-    def close(self):
-        self._stream.close()
-        self._closed = True
-
-    def __enter__(self) -> "BinaryReader":
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-    def tell(self) -> int:
-        return self._stream.tell()
-
-    def seek(self, offset: int, whence: int) -> int:
-        return self._stream.seek(offset, whence)
+    def seek(self, offset, whence):
+        return self.b_stream.seek(offset, whence)
 
     # if this throws an error check offset pointers, more than likey its not reading the right data
-    def read_raw(self, count: int) -> bytes:
-        start_offset = self._stream.tell()
-        result = self._stream.read(count)
+    def read_raw(self, count):
+        start_offset = self.b_stream.tell()
+        result = self.b_stream.read(count)
         if len(result) != count:
             raise ValueError(
                 f"Could not read all of the data starting at {start_offset}. Expected: {count}; got {len(result)}")
@@ -59,6 +46,7 @@ class BinaryReader:
         raw = self.read_raw(8)
         return struct.unpack("<Q", raw)[0]  # reads 8 bytes from the stream and interprets them as a little-endian 64-bit unsigned integer
 
+    '''
     def read_addr(self) -> "Addr":
         return Addr.from_int(self.read_uint32())  # calls self.read_uint32(), reads 4 bytes as 32-bit unsigned integers, then creates an Addr obj
 
@@ -68,3 +56,4 @@ class BinaryReader:
     @property
     def is_closed(self) -> bool:
         return self._closed  # closes stream
+    '''
