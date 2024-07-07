@@ -1,8 +1,38 @@
-class SimpleCacheFile:
+import logging
+from pathlib import Path
+from chromeCacheAnalyzer.utils.binaryReader import BinaryReader as br
+class simpleCacheFile:
 # net/disk_cache/simple/simple_entry_format.h
 
-    def __init__(self, cache_file: Union[os.PathLike, str]):
-        self._path = pathlib.Path(cache_file)
+
+    def __init__(self,cache_entry, output_dir, output_format):
+        self.cache_entry = cache_entry
+        self.output_dir = output_dir
+        self.output_format = output_format
+        self.br = br(cache_entry.cache_file_stream)
+
+
+
+    def gather_cache_file_headers(self):
+
+        self.cache_entry.magic_num = self.br.read_uint64()
+        if self.cache_entry.magic_num != self.cache_entry.simpleCacheHeader.header_intial_magic_number:
+            logging.error(f"Invalid magic (expected {self.cache_entry.simpleCacheHeader.header_intial_magic_number}; got {self.cache_entry.magic_num}")
+            return False
+        self.cache_entry.version = self.br.read_uint32()
+        if self.cache_entry.version != 5:
+            logging.error(f"Invalid version (expected 5; got {self.cache_entry.version}")
+            return False
+        self.cache_entry.key_length = self.br.read_uint32()
+        if self.cache_entry.key_length == 0:
+            logging.error("Invalid key length")
+            return False
+        self.cache_entry.key_hash = self.br.read_uint32()
+        return True
+
+    def read_cache_file(self):
+        return True
+        '''
         self._reader = BinaryReader(self._path.open("rb"))
         self._header = SimpleCacheHeader.from_reader(self._reader)
         self._key = self._reader.read_raw(self._header.key_length).decode("latin-1")
@@ -65,3 +95,7 @@ class SimpleCacheFile:
 
     def close(self):
         self._reader.close()
+'''
+
+    def write_cache_file(self):
+        return True
