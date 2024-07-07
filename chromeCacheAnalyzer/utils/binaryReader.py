@@ -1,8 +1,9 @@
+import io
 from io import BytesIO
 import struct
 class BinaryReader:
     def __init__(self, stream):
-        self.b_stream = BytesIO(stream)
+        self.b_stream = io.BytesIO(stream)
 
     def tell(self):
         return self.b_stream.tell()

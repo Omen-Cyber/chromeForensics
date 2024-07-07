@@ -4,8 +4,6 @@ class simpleCacheFile:
 
     def __init__(self, cache_file):
         self.magic_num = None
-        self.version = None
-        self.entry_size = None
         self.cache_file_stream = cache_file
 
     class simpleCacheEOF:
@@ -22,6 +20,7 @@ class simpleCacheFile:
         header_version = None
         header_key_length = None
         header_key_hash = None
+        header_key_name = None
 
 
 
