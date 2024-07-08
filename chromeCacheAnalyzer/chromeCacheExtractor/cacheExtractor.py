@@ -2,6 +2,7 @@ import traceback
 import logging
 import re
 from pathlib import Path
+from io import BytesIO
 
 
 from chromeCacheAnalyzer.caches.simpleCacheFile import simpleCacheFile as scf
@@ -40,8 +41,9 @@ class cacheExtractor:
                     logging.info("Parsing SimpleCache file: %s", cache_file)
                     with open(cache_file, 'rb') as c_file:
                         cache_entry = scf(sc(c_file.read()), self.out_dir, self.output_format)
-                        self.cache_files.append(cache_entry)
+
                     if cache_entry.cache_entry.cache_file_stream is not None:
+                        self.cache_files.append(cache_entry)
                         logging.info("Gathering cache file headers")
                         if cache_entry.gather_cache_file_headers():
                             logging.info("Reading cache file")
@@ -49,7 +51,7 @@ class cacheExtractor:
                                 logging.info("Writing cache file")
                                 if cache_entry.write_cache_file():
                                     logging.info("Cache file written: %s", self.out_dir / cache_file)
-                                    print(cache_file,cache_entry.cache_entry.magic_num, cache_entry.cache_entry.version, cache_entry.cache_entry.key_length, cache_entry.cache_entry.key_hash)
+                                    print(cache_file,cache_entry.cache_entry.simpleCacheHeader.header_key_hash,cache_entry.cache_entry.simpleCacheHeader.header_key_name)
 
         except Exception as e:
             print("ERROR: ", e)

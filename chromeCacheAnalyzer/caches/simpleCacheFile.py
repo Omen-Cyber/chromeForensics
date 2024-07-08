@@ -9,7 +9,7 @@ class simpleCacheFile:
         self.cache_entry = cache_entry
         self.output_dir = output_dir
         self.output_format = output_format
-        self.br = br(cache_entry.cache_file_stream)
+        self.br = br(self.cache_entry.cache_file_stream)
 
 
 
@@ -19,18 +19,24 @@ class simpleCacheFile:
         if self.cache_entry.magic_num != self.cache_entry.simpleCacheHeader.header_intial_magic_number:
             logging.error(f"Invalid magic (expected {self.cache_entry.simpleCacheHeader.header_intial_magic_number}; got {self.cache_entry.magic_num}")
             return False
-        self.cache_entry.version = self.br.read_uint32()
-        if self.cache_entry.version != 5:
-            logging.error(f"Invalid version (expected 5; got {self.cache_entry.version}")
+        self.cache_entry.simpleCacheHeader.header_version = self.br.read_uint32()
+        if self.cache_entry.simpleCacheHeader.header_version != 5:
+            logging.error(f"Invalid version (expected 5; got {self.cache_entry.simpleCacheHeader.header_version}")
             return False
-        self.cache_entry.key_length = self.br.read_uint32()
-        if self.cache_entry.key_length == 0:
+        self.cache_entry.simpleCacheHeader.header_key_length = self.br.read_uint32()
+        if self.cache_entry.simpleCacheHeader.header_key_length == 0:
             logging.error("Invalid key length")
             return False
-        self.cache_entry.key_hash = self.br.read_uint32()
+        self.cache_entry.simpleCacheHeader.header_key_hash = self.br.read_uint32()
+        self.br.read_uint32()
+        self.cache_entry.simpleCacheHeader.header_key_name = self.br.read_raw(self.cache_entry.simpleCacheHeader.header_key_length).decode("latin-1")
         return True
 
     def read_cache_file(self):
+
+        simple_cache_entry = self.cache_entry.cache_file_stream
+
+
         return True
         '''
         self._reader = BinaryReader(self._path.open("rb"))
