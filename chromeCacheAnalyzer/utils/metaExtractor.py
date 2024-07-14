@@ -1,4 +1,13 @@
-def extract_meta(meta, row: dict, dynamic_row_headers) -> (dict, set, str, str):
+import gzip
+import mimetypes
+import brotli
+import zlib
+import hashlib
+from pathlib import Path
+from typing import Tuple, Dict, Set, Iterable
+
+
+def extract_meta(meta, row: Dict, dynamic_row_headers: Set) -> Tuple[Dict, Set, str, str]:
     if meta is not None:
         row["request_time"] = meta.request_time
         row["response_time"] = meta.response_time
@@ -8,19 +17,18 @@ def extract_meta(meta, row: dict, dynamic_row_headers) -> (dict, set, str, str):
                 row[attribute] += f"; {value}"
             else:
                 row[attribute] = value
-
+        
         out_extension = ""
         if mime := meta.get_attribute("content-type"):
             out_extension = mimetypes.guess_extension(mime[0]) or ""
 
         content_encoding = (meta.get_attribute("content-encoding") or [""])[0]
-        # NEED TO RETURN out_extension, content_encoding, row, dynamic_row_headers
         return row, dynamic_row_headers, out_extension, content_encoding
     else:
         return row, dynamic_row_headers, "", ""
 
 
-def extract_data(data, content_encoding, row, cache_out_dir, out_extension):
+def extract_data(data: bytes, content_encoding: str, row: Dict, cache_out_dir: Path, out_extension: str) -> Dict:
     if data is not None:
         if content_encoding.strip() == "gzip":
             data = gzip.decompress(data)
@@ -44,3 +52,29 @@ def extract_data(data, content_encoding, row, cache_out_dir, out_extension):
         row["file_hash"] = "<No cache file data>"
 
     return row
+
+
+def has_non_empty_values(row: Dict, dynamic_headers: Set) -> bool:
+    for header in dynamic_headers:
+        if row.get(header) not in (None, ""):
+            return True
+    return False
+
+
+def remove_keys_with_empty_vals(rows: Iterable[Dict]) -> Iterable[Dict]:
+    cleaned_rows = []
+    for row in rows:
+        vals = {}
+        for key, value in row.items():
+            if value:
+                if not isinstance(value, str):
+                    vals[key] = value
+                    continue
+                
+                c_val = value.replace('\u0000', '')
+                if len(c_val) > 0:
+                    vals[key] = c_val
+
+        cleaned_rows.append(vals)
+    return cleaned_rows
+

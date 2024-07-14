@@ -1,16 +1,31 @@
+from dataClasses.httpResponseInfo import responseInfoFlags as CachedMetadataFlags
+from utils.binaryReader import BinaryReader
+import datetime
+import types
+from typing import Union, BinaryIO, Optional, Collection, Iterable, Dict, Any, List, Set
+
 class responseParser:
-# net/http/http_response_info.cc / net/http/http_response_info.h
+    # net/http/http_response_info.cc / net/http/http_response_info.h
 
     def __init__(
-            self, header_declarations: set[str], header_attributes: dict[str, list[str]],
-            request_time: datetime.datetime, response_time: datetime.datetime, certs: list[bytes],
-            host_address: str, hot_port: int, other_attributes: dict[str, typing.Any]):
+        self,
+        header_declarations: Set[str],
+        header_attributes: Dict[str, List[str]],
+        request_time: datetime.datetime,
+        response_time: datetime.datetime,
+        certs: List[bytes],
+        host_address: Optional[str],
+        host_port: Optional[int],
+        other_attributes: Dict[str, Any]
+    ):
         self._declarations = header_declarations.copy()
         self._attributes = types.MappingProxyType(header_attributes.copy())
         self._request_time = request_time
         self._response_time = response_time
         self._certs = certs.copy()
         self._other_attributes = types.MappingProxyType(other_attributes)
+        self._host_address = host_address
+        self._host_port = host_port
 
     @property
     def certs(self) -> Iterable[bytes]:
@@ -44,6 +59,14 @@ class responseParser:
     def other_cache_attributes(self):
         return self._other_attributes
 
+    @property
+    def host_address(self) -> Optional[str]:
+        return self._host_address
+
+    @property
+    def host_port(self) -> Optional[int]:
+        return self._host_port
+
     @classmethod
     def from_buffer(cls, buffer: bytes):
         reader = BinaryReader.from_bytes(buffer)
@@ -69,7 +92,7 @@ class responseParser:
         http_header_length = reader.read_uint32()
         http_header_raw = reader.read_raw(http_header_length)
 
-        header_attributes: dict[str, list[str]] = {}
+        header_attributes: Dict[str, List[str]] = {}
         header_declarations = set()
 
         for header_entry in http_header_raw.split(b"\00"):
@@ -143,5 +166,5 @@ class responseParser:
         except ValueError:
             pass
 
-        return CachedMetadata(
+        return responseParser(
             header_declarations, header_attributes, request_time, response_time, certs, host, port, other_attributes)

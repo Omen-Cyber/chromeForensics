@@ -6,12 +6,20 @@ class simpleCacheFile:
         self.magic_num = None
         self.cache_file_stream = cache_file
 
+
     class simpleCacheEOF:
 
         eof_final_magic_number = 0xf4fa6f45970d41d8
         eof_flags = None
         eof_data_crc32 = None
         eof_stream_size = None
+
+        def has_crc(self):
+            return self.eof_flags & 1 > 0
+
+    
+        def has_key_sha256(self):
+            return self.eof_flags & 2 > 0
 
 
     class simpleCacheHeader:
