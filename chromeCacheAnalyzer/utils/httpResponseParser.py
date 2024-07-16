@@ -2,7 +2,7 @@ from dataClasses.httpResponseInfo import responseInfoFlags as CachedMetadataFlag
 from utils.binaryReader import BinaryReader
 import datetime
 import types
-from typing import Union, BinaryIO, Optional, Collection, Iterable, Dict, Any, List, Set
+from typing import Optional, Iterable, Dict, Any, List, Set
 
 class responseParser:
     # net/http/http_response_info.cc / net/http/http_response_info.h
