@@ -1,10 +1,10 @@
-import logging
+import logging # Need to implement logging 
 from pathlib import Path
 from typing import Union, Dict, Tuple, BinaryIO, Optional
 from utils.binaryReader import BinaryReader as br
 from utils.addrParser import Addr, FileType, _BLOCK_FILE_FILETYPE
 from dataClasses.blockCache import blockCacheFile as bc
-from utils.metadataParser import CachedMetadata
+from utils.httpResponseParser import responseParser 
 
 class blockCacheFileParser:
     def __init__(self, cache_file: Union[Path, str], output_dir: Union[Path, str], output_format: str):
@@ -76,7 +76,7 @@ class blockCacheFileParser:
         buffer = self.get_data_buffer(key, 0)
         if not buffer:
             return []
-        meta = CachedMetadata.from_buffer(buffer)
+        meta = responseParser.from_buffer(buffer)
         return [meta]
 
     def get_cachefile(self, key: Union[str, bc.entryStore]) -> list[bytes]:

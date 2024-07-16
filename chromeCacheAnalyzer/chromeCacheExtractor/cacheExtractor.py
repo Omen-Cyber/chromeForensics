@@ -1,17 +1,14 @@
-import logging
 import re
+import logging
 import traceback
 from pathlib import Path
-from typing import Union, BinaryIO, Optional, Collection, Dict, Tuple, BinaryIO, Iterable
+from typing import Union 
 from caches.simpleCacheFile import simpleCacheFileParser as scfp
-from caches.blockCacheFile import blockCacheFileParser
+from caches.blockCacheFile import blockCacheFileParser as bcfp
 from dataClasses.simpleCache import simpleCacheFile as sc
-from dataClasses.blockCache import blockCacheFile as bc
 from utils.metaExtractor import extract_meta, extract_data, remove_keys_with_empty_vals
-from utils.binaryReader import BinaryReader as br
-from utils.addrParser import Addr, FileType, _BLOCK_FILE_FILETYPE
-from utils.LruDataParser import LruDataParser as LruData
-from utils.metadataParser import CachedMetadata
+
+
 
 class cacheExtractor:
     def __init__(self, cache_dir: Union[Path, str], out_dir: Union[Path, str], cache_out_dir: Union[Path, str], output_format: str):
@@ -77,7 +74,7 @@ class cacheExtractor:
                                     logging.info("Writing cache file")
                                     if cache_entry_obj.write_cache_file():
                                         logging.info("Cache file written: %s", self.cache_out_dir / cache_file.name)
-                                        print(cache_file, cache_entry_obj.cache_entry.simpleCacheHeader.header_key_hash, cache_entry_obj.cache_entry.simpleCacheHeader.header_key_name)
+                                        print(f"Cache File: {cache_file}\nKey Hash: {cache_entry_obj.cache_entry.simpleCacheHeader.header_key_hash}\nKey: {cache_entry_obj.cache_entry.simpleCacheHeader.header_key_name}\n")
 
             self.rows = remove_keys_with_empty_vals(self.rows)
 
