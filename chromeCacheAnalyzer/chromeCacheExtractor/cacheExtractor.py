@@ -2,24 +2,28 @@ import logging
 import re
 import traceback
 from pathlib import Path
+from typing import Union, BinaryIO, Optional, Collection, Dict, Tuple, BinaryIO, Iterable
 from caches.simpleCacheFile import simpleCacheFileParser as scfp
+from caches.blockCacheFile import blockCacheFileParser
 from dataClasses.simpleCache import simpleCacheFile as sc
+from dataClasses.blockCache import blockCacheFile as bc
 from utils.metaExtractor import extract_meta, extract_data, remove_keys_with_empty_vals
-
+from utils.binaryReader import BinaryReader as br
+from utils.addrParser import Addr, FileType, _BLOCK_FILE_FILETYPE
+from utils.LruDataParser import LruDataParser as LruData
+from utils.metadataParser import CachedMetadata
 
 class cacheExtractor:
-    
-    def __init__(self, cache_dir, out_dir, cache_out_dir, output_format):
-        self.cache_files = []
+    def __init__(self, cache_dir: Union[Path, str], out_dir: Union[Path, str], cache_out_dir: Union[Path, str], output_format: str):
         self.cache_dir = Path(cache_dir)
         self.out_dir = Path(out_dir)
         self.cache_out_dir = Path(cache_out_dir)
         self.output_format = output_format
         self.dynamic_row_headers = set()
         self.rows = []
+        self.cache_files = []
         logging.basicConfig(level=logging.DEBUG, filename='chrome_cache_analyzer.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
-    
     def parse_cache_entries(self):
         logging.info("Gathering cache type")
         data_files = {"data_0", "data_1", "data_2", "data_3"}
@@ -38,7 +42,6 @@ class cacheExtractor:
                 self.parse_simple_cache_entries()
                 return
 
-    
     def parse_simple_cache_entries(self):
         try:
             for cache_file in self.cache_dir.iterdir():
@@ -62,7 +65,7 @@ class cacheExtractor:
 
                                     row = {"key": cache_entry_obj.cache_entry.simpleCacheHeader.header_key_name}
                                     row, self.dynamic_row_headers, out_extension, content_encoding = extract_meta(metadata, row, self.dynamic_row_headers)
-                                    
+
                                     logging.info("Getting stream 1")
                                     stream_1 = cache_entry_obj.get_stream_1()
                                     if stream_1:
@@ -82,7 +85,38 @@ class cacheExtractor:
             logging.error(f"Error parsing cache entries: {e}")
             traceback.print_exc()
 
-    
     def parse_block_cache_entries(self):
-    # TODO: finish block cache file parsing
-        pass
+        try:
+            for cache_file in self.cache_dir.rglob('*'):
+                if cache_file.is_file():
+                    logging.info(f"Parsing BlockCache file: {cache_file}")
+                    block_cache_parser = bcfp(cache_file, self.out_dir, self.output_format)
+
+                    if block_cache_parser._index_file.index:
+                        logging.info("Parsing Index File")
+                        logging.info("Parsing Cache File Header")
+                        if block_cache_parser._block_files:
+                            logging.info("Parsing Block Entries")
+                            block_entries = block_cache_parser._build_keys()
+                            if block_entries:
+                                logging.info("Parsed Block Entries Successfully")
+                                for key, entry in block_entries.items():
+                                    row = {"key": key}
+                                    row, self.dynamic_row_headers, out_extension, content_encoding = extract_meta(entry, row, self.dynamic_row_headers)
+
+                                    stream_1_data = block_cache_parser.get_data_for_addr(entry.data_addrs[1])
+                                    if stream_1_data:
+                                        logging.info("Extracting data from stream 1")
+                                        row = extract_data(stream_1_data, content_encoding, row, self.out_dir, out_extension)
+
+                                    self.rows.append(row)
+                            else:
+                                logging.error("Failed to parse block entries")
+                        else:
+                            logging.error("Failed to parse cache file header")
+
+            self.rows = remove_keys_with_empty_vals(self.rows)
+
+        except Exception as e:
+            logging.error(f"Error parsing block cache entries: {e}")
+            traceback.print_exc()
