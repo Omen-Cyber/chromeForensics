@@ -62,7 +62,7 @@ def has_non_empty_values(row: Dict, dynamic_headers: Set) -> bool:
 
 
 def remove_keys_with_empty_vals(rows: Iterable[Dict]) -> Iterable[Dict]:
-    cleaned_rows = []
+    cleaned_rows = [] 
     for row in rows:
         vals = {}
         for key, value in row.items():
