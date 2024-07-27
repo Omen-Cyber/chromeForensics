@@ -3,7 +3,7 @@ import os
 import traceback
 from utils.binaryReader import BinaryReader as br
 from dataClasses.simpleCache import simpleCacheFile
-from utils.metadataParser import CachedMetadata
+from utils.httpResponseParser import responseParser as CachedMetadata
 import datetime
 import types
 

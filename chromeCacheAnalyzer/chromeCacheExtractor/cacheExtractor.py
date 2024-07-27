@@ -82,14 +82,14 @@ class cacheExtractor:
             logging.error(f"Error parsing cache entries: {e}")
             traceback.print_exc()
 
-    def parse_block_cache_entries(self):
+    def parse_block_cache_entries(self) -> None:
         try:
             for cache_file in self.cache_dir.rglob('*'):
                 if cache_file.is_file():
                     logging.info(f"Parsing BlockCache file: {cache_file}")
                     block_cache_parser = bcfp(cache_file, self.out_dir, self.output_format)
 
-                    if block_cache_parser._index_file.index:
+                    if block_cache_parser._index_file:
                         logging.info("Parsing Index File")
                         logging.info("Parsing Cache File Header")
                         if block_cache_parser._block_files:

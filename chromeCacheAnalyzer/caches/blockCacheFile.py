@@ -109,7 +109,6 @@ class blockCacheFileParser:
 
     def write_cache_file(self):
         return True
-
     def close(self):
         for _, f in self._block_files.values():
             f.close()

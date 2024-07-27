@@ -1,11 +1,17 @@
 import argparse
 import pathlib
 import logging
+import shutil
+import os
 import csv
 import json
 from chromeCacheExtractor.cacheExtractor import cacheExtractor as ce
 from utils.metaExtractor import remove_keys_with_empty_vals
 import datetime
+
+# list of acceptable answers for yes and no
+y_list = ["Y", "y", "Yes", "yes", "YES"]
+no_list = ["N", "n", "No", "no", "NO"]
 
 
 def json_serial(obj):
@@ -30,12 +36,23 @@ def main(args):
 
     if not in_cache_dir.is_dir():
         raise ValueError("Input directory is not a directory or does not exist")
-
+    
+    # if output_dir already exists ask user if they want to overwrite
     if out_dir.exists():
-        raise ValueError("Output directory already exists")
+        userInput = input("Output directory already exists. Would you like to overwrite? Y/N: ")
+        if userInput in y_list:
+            for root, dirs, files in os.walk(out_dir):
+                for file in files:
+                    os.remove(os.path.join(root, file))
+                for dir in dirs:
+                    shutil.rmtree(os.path.join(root, dir))
+        elif userInput in no_list:
+            return
+        else:
+            raise ValueError("Invalid choice: Exiting...")
 
-    out_dir.mkdir(parents=True)
-    cache_out_dir.mkdir(parents=True)
+    out_dir.mkdir(exist_ok=True) # makes dir for json & and csv file
+    cache_out_dir.mkdir(exist_ok=True) # makes another dir for storing extracted web pages etc..
 
     default_row_headers = ["file_hash", "metadata_link", "key", "request_time", "response_time", "date"]
     dynamic_row_headers = set()
