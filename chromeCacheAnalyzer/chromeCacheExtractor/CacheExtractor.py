@@ -5,10 +5,12 @@ from pathlib import Path
 from io import BytesIO
 
 
-from chromeCacheAnalyzer.caches.simpleCacheFile import simpleCacheFile as scf
-from chromeCacheAnalyzer.dataClasses.simpleCache import simpleCacheFile as sc
+from chromeCacheAnalyzer.caches.SimpleCacheFile import SimpleCacheFile as scf
+from chromeCacheAnalyzer.dataClasses.SimpleCacheData import SimpleCacheFile as sc
 #from chromeCacheAnalyzer.caches import blockCacheFile
-class cacheExtractor:
+
+
+class CacheExtractor:
 
     def __init__(self, cache_dir, out_dir, output_format):
         self.cache_files = []
@@ -51,8 +53,11 @@ class cacheExtractor:
                                 logging.info("Writing cache file")
                                 if cache_entry.write_cache_file():
                                     logging.info("Cache file written: %s", self.out_dir / cache_file)
-                                    print(cache_file,cache_entry.cache_entry.simpleCacheHeader.header_key_hash,cache_entry.cache_entry.simpleCacheHeader.header_key_name)
+                                    print(cache_file, cache_entry.cache_entry.SimpleCacheHeader.header_key_hash, cache_entry.cache_entry.SimpleCacheHeader.header_key_name)
 
         except Exception as e:
             print("ERROR: ", e)
             exit(1)
+
+
+

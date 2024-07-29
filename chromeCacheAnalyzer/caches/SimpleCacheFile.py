@@ -1,7 +1,8 @@
 import logging
 from pathlib import Path
 from chromeCacheAnalyzer.utils.binaryReader import BinaryReader as br
-class simpleCacheFile:
+from chromeCacheAnalyzer.dataClasses import SimpleCacheData
+class SimpleCacheFile:
 # net/disk_cache/simple/simple_entry_format.h
 
 
@@ -16,21 +17,28 @@ class simpleCacheFile:
     def gather_cache_file_headers(self):
 
         self.cache_entry.magic_num = self.br.read_uint64()
-        if self.cache_entry.magic_num != self.cache_entry.simpleCacheHeader.header_intial_magic_number:
-            logging.error(f"Invalid magic (expected {self.cache_entry.simpleCacheHeader.header_intial_magic_number}; got {self.cache_entry.magic_num}")
+        if self.cache_entry.magic_num != self.cache_entry.SimpleCacheHeader.header_intial_magic_number:
+            logging.error(f"Invalid magic (expected {self.cache_entry.SimpleCacheHeader.header_intial_magic_number}; got {self.cache_entry.magic_num}")
             return False
-        self.cache_entry.simpleCacheHeader.header_version = self.br.read_uint32()
-        if self.cache_entry.simpleCacheHeader.header_version != 5:
-            logging.error(f"Invalid version (expected 5; got {self.cache_entry.simpleCacheHeader.header_version}")
+        self.cache_entry.SimpleCacheHeader.header_version = self.br.read_uint32()
+        if self.cache_entry.SimpleCacheHeader.header_version != 5:
+            logging.error(f"Invalid version (expected 5; got {self.cache_entry.SimpleCacheHeader.header_version}")
             return False
-        self.cache_entry.simpleCacheHeader.header_key_length = self.br.read_uint32()
-        if self.cache_entry.simpleCacheHeader.header_key_length == 0:
+        self.cache_entry.SimpleCacheHeader.header_key_length = self.br.read_uint32()
+        if self.cache_entry.SimpleCacheHeader.header_key_length == 0:
             logging.error("Invalid key length")
             return False
-        self.cache_entry.simpleCacheHeader.header_key_hash = self.br.read_uint32()
+        self.cache_entry.SimpleCacheHeader.header_key_hash = self.br.read_uint32()
         self.br.read_uint32()
-        self.cache_entry.simpleCacheHeader.header_key_name = self.br.read_raw(self.cache_entry.simpleCacheHeader.header_key_length).decode("latin-1")
+        self.cache_entry.SimpleCacheHeader.header_key_name = self.br.read_raw(self.cache_entry.SimpleCacheHeader.header_key_length).decode("latin-1")
         return True
+
+    def check_for_simple_eof(self):
+        eof_data = simpleCache.SimpleCacheFile.SimpleCacheEOF()
+        eof_data.eof_final_magic_number = self.br.read_uint64()
+        if eof_data.eof_final_magic_number != simpleCache.SimpleCacheFile.SimpleCacheEOF.eof_final_magic_number:
+            logging.error(f"Invalid magic number: {eof_data.eof_final_magic_number}; Expected: {simpleCache.SimpleCacheFile.SimpleCacheEOF.eof_final_magic_number}")
+            return None
 
     def read_cache_file(self):
 
