@@ -1,10 +1,11 @@
-from dataClasses.httpResponseInfo import responseInfoFlags as CachedMetadataFlags
-from utils.binaryReader import BinaryReader
+from chromeCacheAnalyzer.dataClasses.HttpResponseData import HttpResponseData as CachedMetadataFlags
+from chromeCacheAnalyzer.utils.binaryReader import BinaryReader
 import datetime
 import types
 from typing import Optional, Iterable, Dict, Any, List, Set
 
-class responseParser:
+
+class ResponseParser:
     # net/http/http_response_info.cc / net/http/http_response_info.h
 
     def __init__(
@@ -166,5 +167,5 @@ class responseParser:
         except ValueError:
             pass
 
-        return responseParser(
+        return ResponseParser(
             header_declarations, header_attributes, request_time, response_time, certs, host, port, other_attributes)

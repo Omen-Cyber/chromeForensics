@@ -1,8 +1,8 @@
 # net/http/http_response_info.cc / net/http/http_response_info.h
 import enum
 
-class responseInfoFlags(enum.IntFlag):
 
+class HttpResponseData(enum.IntFlag):
 
     RESPONSE_INFO_VERSION = 3
     RESPONSE_INFO_VERSION_MASK = 0xFF

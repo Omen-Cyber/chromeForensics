@@ -13,6 +13,12 @@ class SimpleCacheFile:
         #eof_data_crc32 = None
         eof_stream_size = None
 
+        def has_crc(self):
+            return self.eof_flags & 1 > 0
+
+        def has_sha256_key(self):
+            return self.eof_flags & 2 > 0
+
 
     class SimpleCacheHeader:
 
