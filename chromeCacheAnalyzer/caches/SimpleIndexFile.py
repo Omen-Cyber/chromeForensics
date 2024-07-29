@@ -1,7 +1,5 @@
 import struct
-from argparse import ArgumentParser
-import os
-import traceback
+from
 
 # The magic number for the index file of blockfile cache
 BLOCK_INDEX_MAGIC_NUM = 0xC3CA03C1
@@ -11,19 +9,7 @@ SIMPLE_INDEX_MAGIC_NUM = 0x656e74657220796f
 SIMPLE_INITIAL_MAGIC_NUM = 0xfcfb6d1ba7725c30
 SIMPLE_FINAL_MAGIC_NUM = 0xf4fa6f45970d41d8
 SIMPLE_SPARSE_RANGE_MAGIC_NUM = 0xeb97bf016553676b
-
-
-def parse_arguments():
-    parser = ArgumentParser(description="A tool to extract information from chrome cache files")
-    parser.add_argument("-i", "--index", help="Path to the index file")
-    parser.add_argument("-d", "--directory", help="Path to the cache directory")
-    parser.add_argument("-o", "--output", help="Path to the output directory")
-    return parser.parse_args()
-
-
-# Cache index file parsing for simple cache
-
-class simple_cache_index:
+class SimpleIndexFile:
 
     def __init__(self, index_file):
         try:
@@ -44,7 +30,6 @@ class simple_cache_index:
             self.version = struct.unpack('I', self.header.read(4))[0]
             self.entries = struct.unpack('q', self.header.read(8))[0]
             self.data_size = struct.unpack('I', self.header.read(4))[0]
-            s
 
     def __str__(self):
         return (f"\

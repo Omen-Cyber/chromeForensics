@@ -10,7 +10,7 @@ class SimpleCacheFile:
 
         eof_final_magic_number = 0xf4fa6f45970d41d8
         eof_flags = None
-        eof_data_crc32 = None
+        #eof_data_crc32 = None
         eof_stream_size = None
 
 
