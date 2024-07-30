@@ -5,8 +5,8 @@ from pathlib import Path
 from io import BytesIO
 
 
-from chromeCacheAnalyzer.caches.SimpleCacheFile import SimpleCacheFile as scf
-from chromeCacheAnalyzer.dataClasses.SimpleCacheData import SimpleCacheFile as sc
+from caches.SimpleCacheFile import SimpleCacheFile as scf
+from dataClasses.SimpleCacheData import SimpleCacheData as sc
 #from chromeCacheAnalyzer.caches import blockCacheFile
 
 
@@ -35,8 +35,7 @@ class CacheExtractor:
                 return "ChromiumBlockFileCache"
             elif re.match(r"^[0-9a-f]{16}_0$", file.name):
                 self.parse_simple_cache_entries()
-
-        return None
+                return
 
     def parse_simple_cache_entries(self):
         try:
@@ -64,8 +63,10 @@ class CacheExtractor:
                                 # Write the cache file to the output directory
                                 logging.info("Writing cache file")
                                 if cache_entry.write_cache_file():
-                                    logging.info("Cache file written: %s", self.out_dir / cache_file)
-                                    #print(cache_file, cache_entry.cache_entry.SimpleCacheHeader.header_key_hash, cache_entry.cache_entry.SimpleCacheHeader.header_key_name)
+                                    logging.info("Cache file written: %s", self.cache_out_dir / cache_file.name)
+                                    print(f"Cache File: {cache_file}\nKey Hash: {cache_entry.cache_entry.SimpleCacheHeader.header_key_hash}\nKey: {cache_entry.cache_entry.SimpleCacheHeader.header_key_name}\n")
+
+                                
 
         except Exception as e:
             print("ERROR: ", e)

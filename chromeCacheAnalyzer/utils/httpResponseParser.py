@@ -1,5 +1,5 @@
-from chromeCacheAnalyzer.dataClasses.HttpResponseData import HttpResponseData as CachedMetadataFlags
-from chromeCacheAnalyzer.utils.binaryReader import BinaryReader
+from dataClasses.HttpResponseData import HttpResponseData as CachedMetadataFlags
+from utils.binaryReader import BinaryReader
 import datetime
 import types
 from typing import Optional, Iterable, Dict, Any, List, Set
