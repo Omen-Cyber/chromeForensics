@@ -159,18 +159,6 @@ class SimpleCacheFile:
     # Parse the headers from the raw stream data using the 'ResponseParser' Class
     def parse_headers_from_stream(self, stream: bytes) -> ResponseParser:
         metadata = ResponseParser.from_buffer(stream)
-        msg = "Parsed Headers:"
-        logging.info(msg)
-        for header in metadata.http_header_declarations:
-            msg = f"Header Declaration: {header}"
-            logging.info(msg)
-        for key, val in metadata.http_header_attributes:
-            msg = f"Header Attribute: {key}: {val}"
-            logging.info(msg)
-        msg = f"Request Time: {metadata.request_time}"
-        logging.info(msg)
-        msg = f"Response Time: {metadata.response_time}"
-        logging.info(msg)
         return metadata
 
     # Write the cache file
