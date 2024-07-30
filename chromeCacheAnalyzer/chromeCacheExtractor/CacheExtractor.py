@@ -40,7 +40,7 @@ class CacheExtractor:
     def parse_simple_cache_entries(self):
         try:
             # Iterate over all files in the cache directory
-            for cache_file in self.cache_dir.iterdir():
+            for cache_file in self.cache_dir.iterdir(): 
                 if cache_file.is_file():
                     logging.info("Parsing SimpleCache file: %s", cache_file)
                     # Open each cache file in binary mode

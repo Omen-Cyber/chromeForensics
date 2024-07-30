@@ -14,7 +14,7 @@ def parse_arguments():
 
     return parser.parse_args()
 
-def main(args):
+def main(args): 
 
 
     # Converting arguments to paths
