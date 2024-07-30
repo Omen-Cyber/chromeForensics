@@ -1,4 +1,4 @@
-from chromeCacheAnalyzer.chromeCacheExtractor.CacheExtractor import CacheExtractor as ce
+from chromeCacheExtractor.CacheExtractor import CacheExtractor as ce
 import argparse
 import pathlib
 import logging
@@ -20,6 +20,7 @@ def main(args):
     # Converting arguments to paths
     in_cache_dir = pathlib.Path(args.c)
     out_dir = pathlib.Path(args.d)
+    output_format = pathlib.Path(args.o)
     cache_out_dir = out_dir / "cache_files"
 
     if not in_cache_dir.is_dir():
@@ -35,9 +36,8 @@ def main(args):
     cache_out_dir.mkdir(exist_ok=True)
 
     # Begin cache extraction process
-    extractor = ce(in_cache_dir, out_dir, cache_out_dir)
+    extractor = ce(in_cache_dir, out_dir, output_format)
     extractor.parse_cache_entries()
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, filename='chrome_cache_analyzer.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
@@ -48,5 +48,4 @@ if __name__ == "__main__":
         logging.error(f"An error occurred: {e}")
         print("ERROR:", e)
         exit(1)
-
 

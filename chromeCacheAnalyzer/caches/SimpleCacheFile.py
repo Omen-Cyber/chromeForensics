@@ -1,21 +1,34 @@
 import logging
 import traceback
 from pathlib import Path
-from chromeCacheAnalyzer.utils.binaryReader import BinaryReader as br
-from chromeCacheAnalyzer.dataClasses.SimpleCacheData import SimpleCacheFile
-from chromeCacheAnalyzer.utils.httpResponseParser import ResponseParser
+from utils.binaryReader import BinaryReader as br
+from dataClasses.SimpleCacheData import SimpleCacheData
+from utils.httpResponseParser import ResponseParser
+from utils.metaExtractor import extract_meta, extract_data, remove_keys_with_empty_vals
 import os
 
 EIGHT_BYTE_PICKLE_ALIGNMENT = True  # switch this if you get errors about the EOF magic when doing a Simple Cache
 SIMPLE_EOF_SIZE = 24 if EIGHT_BYTE_PICKLE_ALIGNMENT else 20
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default JSON code"""
+    if isinstance(obj, (datetime.datetime, datetime.date)):
+        return obj.isoformat()
+    raise TypeError("Type not serializable")
+
+
+
+
 class SimpleCacheFile:
 # Information from net/disk_cache/simple/simple_entry_format.h
 
 
     def __init__(self,cache_entry, output_dir, output_format):
         self.cache_entry = cache_entry
-        self.output_dir = output_dir
-        self.output_format = output_format
+        self.output_dir = Path(output_dir)
+        self.output_format = Path(output_format)
+        self.cache_out_dir = self.output_dir / "cache_files"
+        self.cache_out_dir.mkdir(parents=True, exist_ok=True)
         self.br = br(self.cache_entry.cache_file_stream)
 
 
@@ -40,10 +53,10 @@ class SimpleCacheFile:
         return True
 
     def check_for_simple_eof(self):
-        eof_data = SimpleCacheFile.SimpleCacheEOF()
+        eof_data = SimpleCacheData.SimpleCacheEOF()
         eof_data.eof_final_magic_number = self.br.read_uint64()
-        if eof_data.eof_final_magic_number != SimpleCacheFile.SimpleCacheEOF.eof_final_magic_number:
-            logging.error(f"Invalid magic number: {eof_data.eof_final_magic_number}; Expected: {SimpleCacheFile.SimpleCacheEOF.eof_final_magic_number}")
+        if eof_data.eof_final_magic_number != SimpleCacheData.SimpleCacheEOF.eof_final_magic_number:
+            logging.error(f"Invalid magic number: {eof_data.eof_final_magic_number}; Expected: {SimpleCacheData.SimpleCacheEOF.eof_final_magic_number}")
             return None
         eof_data.eof_flags = self.br.read_uint32()
         eof_data.eof_data_crc32 = self.br.read_uint32()
@@ -52,18 +65,20 @@ class SimpleCacheFile:
 
     def read_cache_file(self):
 
-        # Read the last 24 bytes of the file to get the EOF for stream 0
-        # Calculate the start offset and length for stream 0 from the EOF position
-        # Adjust the offset if there is an additional SHA256 key
-        # Move the file pointer to the position of the EOF marker for stream1
-        # Adjust the position for the SHA265 key if it exists
-        # Get the current position as the end offset of steam1
-        # Read the EOF data for stream1
-        # If the EOF data for steam1 is not read correctly, raise an error and log the data
-        # Calculate the start offset and length for stream 1 from the EOF position
-        # Log any errors that occur and print the stack trace
-        # Retrieve data for stream 0 from the cache file
-        # Retrieve data for stream 1 from the cache file
+        # Read the last 24 bytes of the file to get the EOF for stream 0                        #
+        # Calculate the start offset and length for stream 0 from the EOF position              #
+        # Adjust the offset if there is an additional SHA256 key                                #
+        # Move the file pointer to the position of the EOF marker for stream1                   #
+        # Adjust the position for the SHA265 key if it exists                                   #
+        # Get the current position as the end offset of steam1                                  #
+        # Read the EOF data for stream1                                                         #
+        # If the EOF data for steam1 is not read correctly, raise an error and log the data     #
+        # Calculate the start offset and length for stream 1 from the EOF position              #
+        # Log any errors that occur and print the stack trace                                   #
+        # Retrieve data for stream 0 from the cache file                                        #
+        # Retrieve data for stream 1 from the cache file                                        #
+        # Parse the headers from the raw stream data using the 'ResponseParser' Class           #
+        # Write the cache file                                                                  #
 
 
 
@@ -145,8 +160,47 @@ class SimpleCacheFile:
 
     # Write the cache file
     def write_cache_file(self):
-        return True
+        try:
+            #cache_out_dir = self.output_dir / "cache_files"
+            default_row_headers = ["file_hash", "metadata_link", "key", "request_time", "response_time", "date"]
+            dynamic_row_headers = set()
+            rows = []
 
+            stream_0 = self.get_stream_0()
+            if stream_0:
+                logging.info("Parsing headers from stream 0")
+                metadata = self.parse_headers_from_stream(stream_0)
 
+                row = {"key": self.cache_entry.SimpleCacheHeader.header_key_name}
+                row, dynamic_row_headers, out_extension, content_encoding = extract_meta(metadata, row, dynamic_row_headers)
 
+                logging.info("Getting stream 1 data")
+                stream_1 = self.get_stream_1()
+                if stream_1:
+                    logging.info("Extracting data from stream 1")
+                    row = extract_data(stream_1, content_encoding, row, self.cache_out_dir, out_extension)
 
+                rows.append(row)
+
+            cleaned_rows = remove_keys_with_empty_vals(rows)
+
+            # Write to the appropriate format
+            if self.output_format == 'csv':
+                csv_out_f = (self.output_dir / "cache_report.csv").open("wt", encoding="utf-8", newline="")
+                csv_out_f.write("\ufeff")
+                csv_out = csv.DictWriter(
+                    csv_out_f, fieldnames=default_row_headers + sorted(dynamic_row_headers), dialect=csv.excel,
+                    quoting=csv.QUOTE_ALL, quotechar="\"", escapechar="\\")
+                csv_out.writeheader()
+                for row in cleaned_rows:
+                    csv_out.writerow(row)
+                csv_out_f.close()
+            elif self.output_format == 'json':
+                json_out_p = self.cache_out_dir / "cache_report.json"
+                with json_out_p.open("w", encoding="utf-8", errors='replace') as json_out_f:
+                    json.dump(cleaned_rows, json_out_f, ensure_ascii=False, indent=4, default=json_serial)
+
+        except Exception as e:
+            logging.error(f"Error writing cache file: {e}")
+            # print("ERROR: ", e)
+            traceback.print_exc()

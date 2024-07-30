@@ -1,6 +1,7 @@
 #chromium/chromium/blob/main/net/disk_cache/simple/simple_entry_format.h
 
-class SimpleCacheFile:
+
+class SimpleCacheData:
 
     def __init__(self, cache_file):
         self.magic_num = None
