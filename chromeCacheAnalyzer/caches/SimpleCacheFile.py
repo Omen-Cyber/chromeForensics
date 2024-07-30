@@ -94,7 +94,7 @@ class SimpleCacheFile:
                          f"Flags: {self.cache_entry.stream_0_eof.eof_flags},"
                          f"Stream Size: {self.cache_entry.stream_0_eof.eof_stream_size}")
 
-            # Calculate the start offset for stream 0
+            # Calculate the start offset for stream 0 
             self.cache_entry.stream_0_start_offset_negative = -SIMPLE_EOF_SIZE - self.cache_entry.stream_0_eof.eof_stream_size
 
             # Check if stream0 has a sha256 key and adjust the start offset accordingly
