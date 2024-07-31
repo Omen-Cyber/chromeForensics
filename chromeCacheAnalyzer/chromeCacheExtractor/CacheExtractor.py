@@ -35,29 +35,23 @@ class CacheExtractor:
                         self.cache_files.append(cache_entry)
 
                         # Gather cache file headers
-                        logging.info("Gathering cache file headers")
                         if cache_entry.gather_cache_file_headers():
 
                             # Read binary data from the cache file
-                            logging.info("Reading cache file")
                             if cache_entry.read_cache_file():
 
                                 # Getting stream 0 data (HTTP headers and key)
-                                logging.info("Getting stream 0 data")
                                 stream_0 = cache_entry.get_stream_0()
                                 if stream_0:
-                                    logging.info("Parsing headers from stream 0")
                                     metadata = cache_entry.parse_headers_from_stream(stream_0)
 
-                                    row = {"key": cache_entry.cache_entry.SimpleCacheHeader.header_key_name}
-                                    row, self.dynamic_row_headers, out_extension, content_encoding = extract_meta(metadata, row, self.dynamic_row_headers)
+                                    # row = {"key": cache_entry.cache_entry.SimpleCacheHeader.header_key_name}
+                                    row_headers, out_extension, content_encoding = extract_meta(metadata, cache_entry.cache_entry.SimpleCacheHeader.header_key_name, self.dynamic_row_headers)
 
                                     # Getting stream 1 data (extracted metadata files e.g. javascript, html, css, images)
-                                    logging.info("Getting stream 1 data")
                                     stream_1 = cache_entry.get_stream_1()
                                     if stream_1:
-                                        logging.info("Extracting data from stream 1")
-                                        row = extract_data(stream_1, content_encoding, row, self.out_dir / "cache_files", out_extension)
+                                        row = extract_data(stream_1, content_encoding, row_headers, self.out_dir / "cache_files", out_extension)
 
                                     self.rows.append(row)
                                     print(f"Cache File: {cache_file}\nKey Hash: {cache_entry.cache_entry.SimpleCacheHeader.header_key_hash}\nKey: {cache_entry.cache_entry.SimpleCacheHeader.header_key_name}\n")
@@ -65,17 +59,12 @@ class CacheExtractor:
             self.rows = remove_keys_with_empty_vals(self.rows)
 
             # Write the cache file to the output directory
-            logging.info("Writing cache file")
             for cache_entry in self.cache_files:
                 cache_entry.rows = self.rows
                 cache_entry.dynamic_row_headers = self.dynamic_row_headers
                 cache_entry.write_cache_file()
                 break
-
-
         except Exception as e:
             logging.error(f"Error parsing cache entries: {e}")
             traceback.print_exc()
 
-    def parse_block_cache_entries(self):
-        pass

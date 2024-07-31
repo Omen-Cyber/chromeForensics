@@ -10,8 +10,8 @@ import json
 import csv
 import datetime
 
-EIGHT_BYTE_PICKLE_ALIGNMENT = True  # switch this if you get errors about the EOF magic when doing a Simple Cache
-SIMPLE_EOF_SIZE = 24 if EIGHT_BYTE_PICKLE_ALIGNMENT else 20
+pickle_bytes = 24  # switch this number to 20 if you get errors about the EOF magic when doing a Simple Cache
+SIMPLE_EOF_SIZE = pickle_bytes
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default JSON code"""
@@ -167,16 +167,15 @@ class SimpleCacheFile:
             default_row_headers = ["file_hash", "metadata_link", "key", "request_time", "response_time", "date"]
 
             # Write to the appropriate format
-            if self.output_format == 'csv':
-                csv_out_f = (self.output_dir / "cache_report.csv").open("wt", encoding="utf-8", newline="")
-                csv_out_f.write("\ufeff")
-                csv_out = csv.DictWriter(
-                    csv_out_f, fieldnames=default_row_headers + sorted(self.dynamic_row_headers), dialect=csv.excel,
+            if self.output_format == 'tsv':
+                tsv_out_f = (self.output_dir / "cache_report.tsv").open("wt", encoding="utf-8", newline="")
+                tsv_out = csv.DictWriter(
+                    tsv_out_f, fieldnames=default_row_headers + sorted(self.dynamic_row_headers), delimiter='\t',
                     quoting=csv.QUOTE_ALL, quotechar="\"", escapechar="\\")
-                csv_out.writeheader()
+                tsv_out.writeheader()
                 for row in self.rows:
-                    csv_out.writerow(row)
-                csv_out_f.close()
+                    tsv_out.writerow(row)
+                tsv_out_f.close()
             elif self.output_format == 'json':
                 json_out_p = self.output_dir / "cache_report.json"
                 with json_out_p.open("w", encoding="utf-8", errors='replace') as json_out_f:
