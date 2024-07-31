@@ -7,25 +7,29 @@ from pathlib import Path
 from typing import Tuple, Dict, Set, Iterable
 
 
-def extract_meta(meta, row: Dict, dynamic_row_headers: Set) -> Tuple[Dict, Set, str, str]:
+def extract_meta(meta, key, row: Dict) -> Tuple[Dict, str, str]:
+    final_row = {"cache_file_metadata": {}, "http_response_headers": {}}
+    if key is not None:
+        entry, host, uri = key.split()
+        final_row["cache_file_metadata"]["key"] = entry
+        final_row["cache_file_metadata"]["host"] = host
+        final_row["cache_file_metadata"]["uri"] = uri
     if meta is not None:
-        row["request_time"] = meta.request_time
-        row["response_time"] = meta.response_time
+        final_row["cache_file_metadata"]["request_time"] = meta.request_time
+        final_row["cache_file_metadata"]["response_time"] = meta.response_time
+        final_row["cache_file_metadata"]["host_address"] = meta.host_address
+        final_row["cache_file_metadata"]["host_port"] = meta.host_port
+
         for attribute, value in meta.http_header_attributes:
-            dynamic_row_headers.add(attribute)
-            if attribute in row:
-                row[attribute] += f"; {value}"
-            else:
-                row[attribute] = value
-        
+            final_row["http_response_headers"][attribute] = value
         out_extension = ""
         if mime := meta.get_attribute("content-type"):
             out_extension = mimetypes.guess_extension(mime[0]) or ""
 
         content_encoding = (meta.get_attribute("content-encoding") or [""])[0]
-        return row, dynamic_row_headers, out_extension, content_encoding
+        return final_row, out_extension, content_encoding
     else:
-        return row, dynamic_row_headers, "", ""
+        return final_row, "", ""
 
 
 def extract_data(data: bytes, content_encoding: str, row: Dict, cache_out_dir: Path, out_extension: str) -> Dict:
@@ -44,12 +48,12 @@ def extract_data(data: bytes, content_encoding: str, row: Dict, cache_out_dir: P
         cache_file_hash = h.hexdigest()
         file_path = cache_out_dir / (cache_file_hash + out_extension)
         file_link = f'file:///{file_path.resolve()}'
-        row["file_hash"] = cache_file_hash
-        row["metadata_link"] = file_link
+        row["cache_file_metadata"]["file_hash"] = cache_file_hash
+        row["cache_file_metadata"]["metadata_link"] = file_link
         with file_path.open("wb") as out:
             out.write(data)
     else:
-        row["file_hash"] = "<No cache file data>"
+        row["cache_file_metadata"]["file_hash"] = "<No cache file data>"
 
     return row
 
