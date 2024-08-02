@@ -26,7 +26,7 @@ def flatten_dict(d, parent_key='', sep='_'):
     """
     items = []
     for k, v in d.items():
-        new_key =  k
+        new_key = k
         if isinstance(v, dict):
             items.extend(flatten_dict(v, new_key, sep=sep).items())
         else:
@@ -46,7 +46,6 @@ class SimpleCacheFile:
         self.br = br(self.cache_entry.cache_file_stream)
         self.log_entries = []
         self.rows = []
-        self.dynamic_row_headers = dynamic_row_headers
 
     # Gather the cache file headers
     def gather_cache_file_headers(self):
@@ -178,13 +177,14 @@ class SimpleCacheFile:
     # Write the cache file
     def write_cache_file(self):
         try:
+            d_rows = ["cache_file", "file_hash", "key", "host", "uri", "request_time", "response_time", "host_address", "host_port"]
             flattened_rows = [flatten_dict(row) for row in self.rows]
-            d_rows = ["cache_file", "key", "host", "uri", "request_time", "response_time", "host_address", "host_port"]
 
             all_headers = set()
             for row in flattened_rows:
                 all_headers.update(row.keys())
-            all_headers = sorted(all_headers)
+            all_headers2 = [item for item in all_headers if item not in d_rows]
+            all_headers = sorted(all_headers2)
 
             if self.output_format == 'tsv':
                 tsv_out_p = self.output_dir / "cache_report.tsv"
@@ -206,4 +206,3 @@ class SimpleCacheFile:
             logging.error(msg)
             traceback.print_exc()
             return False
-            
