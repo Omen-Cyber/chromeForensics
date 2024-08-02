@@ -1,16 +1,19 @@
 import argparse
 import pathlib
 import logging
-import shutil
 import os
 import datetime
 import sys
-
 from chromeCacheExtractor.CacheExtractor import CacheExtractor as ce
+
+__description__ = "Extracts cache files and HTTP response headers for Chromium-based browsers that use Simple Cache format"
+__organization__ = "Omen-Cyber"
+__contact__ = "DaKota LaFeber"
+__version__ = 1.0
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Extracts cache files and HTTP response headers for Chromium-based browsers that use Simple Cache format")
+    parser = argparse.ArgumentParser(description=__description__)
     parser.add_argument('-c', type=str, required=True, help='Path to the Chromium cache directory (see README.md or common cache for directories)')
     parser.add_argument('-d', type=str, required=True, help='Path to extracted cache files and headers information (cache_report.*)')
     parser.add_argument('-o', choices=['json', 'tsv'], required=True, help='Output format for headers and metadata: json or tsv')

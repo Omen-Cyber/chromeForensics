@@ -17,8 +17,21 @@ def json_serial(obj):
     """JSON serializer for objects not serializable by default JSON code"""
     if isinstance(obj, (datetime.datetime, datetime.date)):
         return obj.isoformat()
-    raise TypeError("Type not serializable")
+    #raise TypeError("Type not serializable")
 
+
+def flatten_dict(d, parent_key='', sep='_'):
+    """
+    Flatten a nested dictionary.
+    """
+    items = []
+    for k, v in d.items():
+        new_key = k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 class SimpleCacheFile:
@@ -33,7 +46,6 @@ class SimpleCacheFile:
         self.br = br(self.cache_entry.cache_file_stream)
         self.log_entries = []
         self.rows = []
-        self.dynamic_row_headers = dynamic_row_headers
 
     # Gather the cache file headers
     def gather_cache_file_headers(self):
@@ -161,26 +173,32 @@ class SimpleCacheFile:
         metadata = ResponseParser.from_buffer(stream)
         return metadata
 
+
     # Write the cache file
     def write_cache_file(self):
         try:
-            default_row_headers = ["file_hash", "metadata_link", "key", "request_time", "response_time", "date"]
+            d_rows = ["cache_file", "file_hash", "key", "host", "uri", "request_time", "response_time", "host_address", "host_port"]
+            flattened_rows = [flatten_dict(row) for row in self.rows]
 
-            # Write to the appropriate format
+            all_headers = set()
+            for row in flattened_rows:
+                all_headers.update(row.keys())
+            all_headers2 = [item for item in all_headers if item not in d_rows]
+            all_headers = sorted(all_headers2)
+
             if self.output_format == 'tsv':
-                tsv_out_f = (self.output_dir / "cache_report.tsv").open("wt", encoding="utf-8", newline="")
-                tsv_out = csv.DictWriter(
-                    tsv_out_f, fieldnames=default_row_headers + sorted(self.dynamic_row_headers), delimiter='\t',
-                    quoting=csv.QUOTE_ALL, quotechar="\"", escapechar="\\")
-                tsv_out.writeheader()
-                for row in self.rows:
-                    tsv_out.writerow(row)
-                tsv_out_f.close()
+                tsv_out_p = self.output_dir / "cache_report.tsv"
+                with tsv_out_p.open("w", encoding="utf-8", newline="") as tsv_out_f:
+                    tsv_out_f.write("\ufeff")
+                    tsv_out = csv.DictWriter(tsv_out_f, fieldnames=d_rows + all_headers, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
+                    tsv_out.writeheader()
+                    for row in flattened_rows:
+                        tsv_out.writerow(row)
             elif self.output_format == 'json':
                 json_out_p = self.output_dir / "cache_report.json"
                 with json_out_p.open("w", encoding="utf-8", errors='replace') as json_out_f:
                     json.dump(self.rows, json_out_f, ensure_ascii=False, indent=4, default=json_serial)
-
+    
 
             return True
         except Exception as e:
