@@ -50,8 +50,8 @@ The tool will generate:
 ## Chrome Cache Locations
 
 - **Windows 10/11**: C:\Users\Username\AppData\Local\Google\Chrome\User Data\Default\Cache
-- **Linux**: /home/<username>/.cache/google-chrome/Default/Cache/Cache_Data
-- **Mac**: /Users/<username>/Library/Caches/Google/Chrome/Default/Cache
+- **Linux**: /home/%username%/.cache/google-chrome/Default/Cache/Cache_Data
+- **Mac**: /Users/%username%/Library/Caches/Google/Chrome/Default/Cache
 
 
 ## Contact
