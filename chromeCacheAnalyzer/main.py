@@ -40,7 +40,7 @@ def main(args):
     extractor.parse_simple_cache_entries()
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, filename='chrome_cache_analyzer.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.DEBUG, filename='chrome_cache_analyzer.log', filemode='w', format='%(levelname)s - %(message)s')
     try:
         cache_args = parse_arguments()
         main(cache_args)
