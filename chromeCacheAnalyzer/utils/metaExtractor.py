@@ -3,6 +3,7 @@ import mimetypes
 import brotli
 import zlib
 import hashlib
+import datetime
 from pathlib import Path
 from typing import Tuple, Dict, Set, Iterable
 
@@ -59,6 +60,27 @@ def extract_data(data: bytes, content_encoding: str, row: Dict, cache_out_dir: P
         row["cache_file_metadata"]["file_hash"] = "<No cache file data>"
 
     return row
+
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default JSON code"""
+    if isinstance(obj, (datetime.datetime, datetime.date)):
+        return obj.isoformat()
+    #raise TypeError("Type not serializable")
+
+
+def flatten_dict(d, parent_key='', sep='_'):
+    """
+    Flatten a nested dictionary.
+    """
+    items = []
+    for k, v in d.items():
+        new_key = k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 def remove_keys_with_empty_vals(rows: Iterable[Dict]) -> Iterable[Dict]:
     cleaned_rows = [] 

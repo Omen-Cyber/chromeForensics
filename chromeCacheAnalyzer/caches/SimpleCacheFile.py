@@ -4,7 +4,7 @@ from pathlib import Path
 from utils.binaryReader import BinaryReader as br
 from dataClasses.SimpleCacheData import SimpleCacheData
 from utils.httpResponseParser import ResponseParser
-from utils.metaExtractor import extract_meta, extract_data, remove_keys_with_empty_vals
+from utils.metaExtractor import extract_meta, extract_data, remove_keys_with_empty_vals, json_serial, flatten_dict
 import os
 import json
 import csv
@@ -13,25 +13,6 @@ import datetime
 pickle_bytes = 24  # switch this number to 20 if you get errors about the EOF magic when doing a Simple Cache
 SIMPLE_EOF_SIZE = pickle_bytes
 
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default JSON code"""
-    if isinstance(obj, (datetime.datetime, datetime.date)):
-        return obj.isoformat()
-    #raise TypeError("Type not serializable")
-
-
-def flatten_dict(d, parent_key='', sep='_'):
-    """
-    Flatten a nested dictionary.
-    """
-    items = []
-    for k, v in d.items():
-        new_key = k
-        if isinstance(v, dict):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
 
 
 class SimpleCacheFile:
