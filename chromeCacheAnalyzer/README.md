@@ -8,7 +8,7 @@ The Chrome Cache Forensics Tool is designed for digital forensic analysts and cy
 
 - **Cache Parsing**: Supports parsing of both Block File Cache and Simple File Cache formats.
 - **Metadata Extraction**: Extracts detailed metadata from cache entries, including request and response times, headers, and more.
-- **Data Export**: Exports extracted data to CSV and JSON formats for easy analysis and reporting.
+- **Data Export**: Exports extracted data to TSV and JSON formats for easy analysis and reporting.
 - **Modular Design**: Well-structured codebase with clear separation of responsibilities for easy maintenance and extension.
 
 ## Installation
@@ -34,12 +34,12 @@ python3 main.py -c <cache_input_dir> -d <output_dir> -o <output_format>
 ```
 - **<cache input dir>**: Path to the directory containing Chrome's cache files.
 - **<output dir>**: Path to the directory where the output files will be saved.
-- **<output format>**: The format for the extracted data. (json or csv)
+- **<output format>**: The format for the extracted data. (json or tsv)
 ### Output
 
 The tool will generate:
 
-- A CSV file (`cache_report.csv`) containing a structured view of the extracted metadata.
+- A TSV file (`cache_report.tsv`) containing a structured view of the extracted metadata.
 - A JSON file (`cache_report.json`) containing the same data in JSON format.
 - A directory (`cache_files`) containing extracted cache files, images, and HTML pages.
 
