@@ -14,7 +14,7 @@ __version__ = 1.0
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description=__description__)
+    parser = argparse.ArgumentParser(description="Description: " + __description__)
     parser.add_argument('-c', type=str, required=True, help='Path to the Chromium cache directory (see README.md or common cache for directories)')
     parser.add_argument('-d', type=str, required=True, help='Path to extracted cache files and headers information (cache_report.*)')
     parser.add_argument('-o', choices=['json', 'tsv'], required=True, help='Output format for headers and metadata: json or tsv')
