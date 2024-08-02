@@ -60,14 +60,6 @@ def extract_data(data: bytes, content_encoding: str, row: Dict, cache_out_dir: P
 
     return row
 
-
-def has_non_empty_values(row: Dict, dynamic_headers: Set) -> bool:
-    for header in dynamic_headers:
-        if row.get(header) not in (None, ""):
-            return True
-    return False
-
-
 def remove_keys_with_empty_vals(rows: Iterable[Dict]) -> Iterable[Dict]:
     cleaned_rows = [] 
     for row in rows:
