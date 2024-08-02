@@ -19,6 +19,24 @@ class CacheExtractor:
         self.rows = []
         logging.basicConfig(level=logging.DEBUG, filename='chrome_cache_analyzer.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
+
+    def parse_cache_entries(self):
+        logging.info("Gathering cache type")
+        data_files = {"data_0", "data_1", "data_2", "data_3"}
+
+        for file in self.cache_dir.iterdir():
+            if file.name == "index-dir":
+                self.parse_simple_cache_entries()
+                return
+            elif file.name in data_files:
+                logging.error("Invalid cache type: Detected block cache type")
+            elif re.match(r"f_[0-9a-f]{6}", file.name):
+                logging.error("Invalid cache type: Detected block cache type")
+            elif re.match(r"^[0-9a-f]{16}_0$", file.name):
+                self.parse_simple_cache_entries()
+                return
+
+    
     def parse_simple_cache_entries(self):
         try:
             # Iterate over all files in the cache directory
