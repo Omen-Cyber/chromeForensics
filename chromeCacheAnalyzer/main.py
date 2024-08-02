@@ -2,9 +2,10 @@ import argparse
 import pathlib
 import logging
 import os
-import datetime
+from datetime import datetime
 import sys
 from chromeCacheExtractor.CacheExtractor import CacheExtractor as ce
+
 
 __description__ = "Extracts cache files and HTTP response headers for Chromium-based browsers that use Simple Cache format"
 __organization__ = "Omen-Cyber"
@@ -20,6 +21,7 @@ def parse_arguments():
     return parser.parse_args()
 
 def main(args):
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     in_cache_dir = pathlib.Path(args.c)
     out_dir = pathlib.Path(args.d)
 
@@ -29,6 +31,7 @@ def main(args):
     if out_dir.exists():
         raise ValueError("Output directory already exists")
 
+    logging.info(f"Running Chrome Cache Analyzer - Version: {__version__} - Date: {current_time}")
     logging.info("Analyzing cache files from: " + args.c)
     logging.info("Outputting cache files to: " + args.d)
     logging.info("Output format: " + args.o)
