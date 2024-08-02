@@ -7,8 +7,11 @@ from pathlib import Path
 from typing import Tuple, Dict, Set, Iterable
 
 
-def extract_meta(meta, key, row: Dict) -> Tuple[Dict, str, str]:
+def extract_meta(meta, cache_file, key, row: Dict) -> Tuple[Dict, str, str]:
     final_row = {"cache_file_metadata": {}, "http_response_headers": {}}
+    if cache_file is not None:
+        cache_file_path = str(cache_file.resolve())
+        final_row["cache_file_metadata"]["cache_file"] = cache_file_path
     if key is not None:
         entry, host, uri = key.split()
         final_row["cache_file_metadata"]["key"] = entry

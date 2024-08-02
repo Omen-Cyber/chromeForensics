@@ -1,11 +1,9 @@
 import argparse
 import pathlib
 import logging
-import shutil
 import os
 import datetime
 import sys
-
 from chromeCacheExtractor.CacheExtractor import CacheExtractor as ce
 
 
